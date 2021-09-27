@@ -1,10 +1,16 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const app = express();
 const cors = require('cors');
-const PORT = 80;
+const redis = require('redis');
+const PORT = 3000;
 const HOST = '0.0.0.0';
 
+
+const app = express();
+const client = redis.createClient({
+    host: 'redis-server',
+    port: 6379
+})
 
 app.use(function(req, res, next) {
     res.setHeader('Access-Control-Allow-Origin','*');
@@ -13,8 +19,23 @@ app.use(function(req, res, next) {
     next();
   });
 
+  client.set('visits', 0);
+
 app.get('/', (req, res) => {
-    res.send(Buffer.from(`<h2>Hello</h2><b>Hostname:</b>${req.hostname}<br/>`));
+    client.get('visits', (err, visits) => {
+        res.send('Number of visits is: ' + visits);
+    })
+})
+
+app.get('/stat', (req, res) => {
+    client.get('visits', (err, visits) => {
+        res.send('Number of visits is: ' + visits + 1)
+        client.set('visits', parseInt(visits) + 1)
+    })
+})
+
+app.get('/about', (req, res) => {
+    res.send(Buffer.from(`<h2>Hello, ${req.hostname}</h2><b>Hostname:</b>${req.hostname}<br/>`));
 });
   
 

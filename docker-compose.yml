@@ -1,11 +1,18 @@
 version: '2'
 
 services:
+  redis-server:
+    image: redis
+    container_name: redis-server
+    expose:
+      - 6379
   web:
     build:
       context: .
       dockerfile: Dockerfile
+    volumes:
+      - ./:/usr/src/app
     container_name: webexpress
     image: germanleton/architecture
     ports:
-      - "3000:80"
+      - "3000:3000"
